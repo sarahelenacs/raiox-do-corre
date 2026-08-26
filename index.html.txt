@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raio-X do Corre - Financeiro Simples</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-pf: #38bdf8;
+            --accent-mei: #a855f7;
+            --danger: #f43f5e;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+        h1 { font-size: 1.4rem; text-align: center; margin-bottom: 6px; margin-top: 0; }
+        p.subtitle { text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: opacity 0.2s;
+        }
+        .btn-pf { background-color: var(--accent-pf); color: #0f172a; }
+        .btn-mei { background-color: var(--accent-mei); color: #fff; }
+        .btn-back { background-color: transparent; color: var(--text-muted); border: 1px solid #334155; margin-top: 5px; }
+        .btn:hover { opacity: 0.9; }
+        .hidden { display: none; }
+        label { display: block; margin-top: 14px; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); }
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 1rem;
+        }
+        .result-box {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid var(--accent-pf);
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .badge-pf { background: rgba(56, 189, 248, 0.2); color: var(--accent-pf); }
+        .badge-mei { background: rgba(168, 85, 247, 0.2); color: var(--accent-mei); }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+        <!-- TELA 1: ESCOLHA DO PERFIL -->
+        <div id="screen-home">
+            <h1>Como tá o corre hoje?</h1>
+            <p class="subtitle">Sem termos chatos de banco. Escolha o que quer organizar:</p>
+            <button class="btn btn-pf" onclick="selectProfile('pf')">💼 Vida Pessoal (Salário, Cartão, Casa)</button>
+            <button class="btn btn-mei" onclick="selectProfile('mei')">🚀 Meu Negócio (MEI, Caixa, Fornecedor)</button>
+        </div>
+
+        <!-- TELA 2: FORMULÁRIO PF -->
+        <div id="screen-pf" class="hidden">
+            <span class="badge badge-pf">Perfil: Pessoa Física</span>
+            <h1>Raio-X Pessoal</h1>
+            <p class="subtitle">Joga a real dos números do mês:</p>
+            
+            <label>Quanto entrou de grana líquida no mês? (R$)</label>
+            <input type="number" id="pf-income" placeholder="Ex: 2500">
+
+            <label>Quanto veio na fatura do cartão? (R$)</label>
+            <input type="number" id="pf-card" placeholder="Ex: 1200">
+
+            <label>Quanto vai em mercado e contas fixas? (R$)</label>
+            <input type="number" id="pf-bills" placeholder="Ex: 900">
+
+            <button class="btn btn-pf" style="margin-top: 20px;" onclick="calculatePF()">Ver meu Raio-X</button>
+            <button class="btn btn-back" onclick="goHome()">Voltar</button>
+        </div>
+
+        <!-- TELA 2.2: FORMULÁRIO MEI -->
+        <div id="screen-mei" class="hidden">
+            <span class="badge badge-mei">Perfil: Negócio / MEI</span>
+            <h1>Raio-X do Negócio</h1>
+            <p class="subtitle">Para separar a água do óleo nas suas contas:</p>
+            
+            <label>Quanto o negócio faturou no total? (R$)</label>
+            <input type="number" id="mei-income" placeholder="Ex: 5000">
+
+            <label>Custos para o negócio rodar (Mercadoria/Taxas)? (R$)</label>
+            <input type="number" id="mei-costs" placeholder="Ex: 2000">
+
+            <label>Quanto você tirou pro seu bolso (Pró-labore)? (R$)</label>
+            <input type="number" id="mei-draw" placeholder="Ex: 1800">
+
+            <button class="btn btn-mei" style="margin-top: 20px;" onclick="calculateMEI()">Ver Raio-X do Negócio</button>
+            <button class="btn btn-back" onclick="goHome()">Voltar</button>
+        </div>
+
+        <!-- TELA 3: RESULTADO -->
+        <div id="screen-result" class="hidden">
+            <h1>Seu Diagnóstico</h1>
+            <div id="result-content" class="result-box">
+                <!-- Conteúdo gerado entra aqui -->
+            </div>
+            <button class="btn btn-pf" id="result-btn" style="margin-top: 20px;" onclick="goHome()">Fazer Outro Raio-X</button>
+        </div>
+    </div>
+
+    <script>
+        function goHome() {
+            document.getElementById('screen-pf').classList.add('hidden');
+            document.getElementById('screen-mei').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-home').classList.remove('hidden');
+        }
+
+        function selectProfile(profile) {
+            document.getElementById('screen-home').classList.add('hidden');
+            if (profile === 'pf') {
+                document.getElementById('screen-pf').classList.remove('hidden');
+            } else {
+                document.getElementById('screen-mei').classList.remove('hidden');
+            }
+        }
+
+        function calculatePF() {
+            const income = parseFloat(document.getElementById('pf-income').value) || 0;
+            const card = parseFloat(document.getElementById('pf-card').value) || 0;
+            const bills = parseFloat(document.getElementById('pf-bills').value) || 0;
+
+            const totalSpent = card + bills;
+            const balance = income - totalSpent;
+
+            let diagnosis = "";
+            let colorBorder = "var(--accent-pf)";
+
+            if (balance < 0) {
+                colorBorder = "var(--danger)";
+                diagnosis = `🚨 <strong>Alerta Vermelho:</strong> Tu fechou o mês R$ ${Math.abs(balance).toFixed(2)} no vermelho! O cartão tá puxando teu freio de mão (levou R$ ${card}). Precisa estancar isso antes de fazer nova dívida.`;
+            } else if (card > (income * 0.4)) {
+                colorBorder = "var(--warning)";
+                diagnosis = `⚠️ <strong>Atenção ao Cartão:</strong> Sobrou R$ ${balance.toFixed(2)}, mas o cartão comeu mais de 40% do que entrou. O perigo tá nas parcelas acumuladas.`;
+            } else {
+                colorBorder = "var(--success)";
+                diagnosis = `✅ <strong>Respiro Financeiro:</strong> Sobrou R$ ${balance.toFixed(2)} no bolso. As contas fecharam no azul! Dá para respirar um pouco, mas continua de olho nas faturas.`;
+            }
+
+            document.getElementById('screen-pf').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+            document.getElementById('result-content').style.borderLeftColor = colorBorder;
+            
+            document.getElementById('result-content').innerHTML = `
+                <p style="margin: 4px 0;">Entrada: <strong>R$ ${income.toFixed(2)}</strong></p>
+                <p style="margin: 4px 0;">Gastos (Cartão + Contas): <strong>R$ ${totalSpent.toFixed(2)}</strong></p>
+                <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;">
+                <p style="margin: 0; line-height: 1.5;">${diagnosis}</p>
+            `;
+            document.getElementById('result-btn').className = "btn btn-pf";
+        }
+
+        function calculateMEI() {
+            const income = parseFloat(document.getElementById('mei-income').value) || 0;
+            const costs = parseFloat(document.getElementById('mei-costs').value) || 0;
+            const draw = parseFloat(document.getElementById('mei-draw').value) || 0;
+
+            const grossProfit = income - costs;
+            const remainingInBusiness = grossProfit - draw;
+
+            let diagnosis = "";
+            let colorBorder = "var(--accent-mei)";
+
+            if (remainingInBusiness < 0) {
+                colorBorder = "var(--danger)";
+                diagnosis = `🚨 <strong>Perigo no Caixa:</strong> Você tirou mais para você (R$ ${draw}) do que o lucro real que sobrou no negócio (R$ ${grossProfit}). Você tá tirando dinheiro do capital de giro e vai faltar para comprar mercadoria na próxima semana!`;
+            } else if (remainingInBusiness === 0) {
+                colorBorder = "var(--warning)";
+                diagnosis = `⚠️ <strong>No Limite:</strong> Tudo o que o negócio lucrou foi sugado para o seu bolso. Sobrou zero de reserva na empresa para imprevistos. Qualquer problema, o negócio trava.`;
+            } else {
+                colorBorder = "var(--success)";
+                diagnosis = `✅ <strong>Negócio Saudável:</strong> O negócio faturou, pagou os custos, você tirou seu pró-labore e ainda deixou R$ ${remainingInBusiness.toFixed(2)} guardados no caixa da firma. Excelente, continue assim!`;
+            }
+
+            document.getElementById('screen-mei').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+            document.getElementById('result-content').style.borderLeftColor = colorBorder;
+            
+            document.getElementById('screen-result').style.borderColor = colorBorder;
+            document.getElementById('result-content').innerHTML = `
+                <p style="margin: 4px 0;">Faturamento da Firma: <strong>R$ ${income.toFixed(2)}</strong></p>
+                <p style="margin: 4px 0;">Lucro Líquido do Negócio: <strong>R$ ${grossProfit.toFixed(2)}</strong></p>
+                <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;">
+                <p style="margin: 0; line-height: 1.5;">${diagnosis}</p>
+            `;
+            document.getElementById('result-btn').className = "btn btn-mei";
+        }
+    </script>
+</body>
+</html>
